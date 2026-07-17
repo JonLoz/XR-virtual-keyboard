@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.platform.LocalSpatialConfiguration
+import androidx.xr.scenecore.scene
 import androidx.xr.compose.spatial.ContentEdge
 import androidx.xr.compose.spatial.Orbiter
 import androidx.xr.compose.spatial.Subspace
@@ -38,6 +38,7 @@ import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.resizable
 import androidx.xr.compose.subspace.layout.width
+import com.devices.xrvirtualkeyboard.VirtualKeyboard
 import com.example.xrvirtualkeyboard.ui.theme.XRVirtualKeyboardTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,15 +50,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             XRVirtualKeyboardTheme {
-                val spatialConfiguration = LocalSpatialConfiguration.current
+                val session = LocalSession.current
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
-                    Subspace {
-                        MySpatialContent(
-                            onRequestHomeSpaceMode = spatialConfiguration::requestHomeSpaceMode
-                        )
-                    }
+//                    Subspace {
+//                        MySpatialContent(
+//                            onRequestHomeSpaceMode = { session?.scene?.requestHomeSpace() }
+//                        )
+//                    }
+                    VirtualKeyboard()
                 } else {
-                    My2DContent(onRequestFullSpaceMode = spatialConfiguration::requestFullSpaceMode)
+                    My2DContent(onRequestFullSpaceMode = { session?.scene?.requestFullSpace() })
                 }
             }
         }
