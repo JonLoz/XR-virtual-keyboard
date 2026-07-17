@@ -1,4 +1,4 @@
-package com.devices.xrvirtualkeyboard.geometry
+package com.example.xrvirtualkeyboard.geometry
 
 data class Point2D(val x: Float, val y: Float)
 
@@ -20,12 +20,15 @@ private const val KEY_SPACING = 20f
 /** Lays keys out left-to-right with even spacing. Pure function: same input, same output, always. */
 fun computeRowBounds(keys: List<KeyDefinition>): List<KeyBounds> {
     val step = KEY_SIZE + KEY_SPACING
+    val totalWidth = keys.size * KEY_SIZE + (keys.size - 1) * KEY_SPACING
+    val startX = -totalWidth / 2f + KEY_SIZE / 2f
+
     return keys.mapIndexed { index, key ->
         KeyBounds(
             id = key.id,
-            center = Point2D(x = index * step, y = 0f),
+            center = Point2D(x = startX + index * step, y = 0f),
             width = KEY_SIZE,
-            height = KEY_SIZE
+            height = KEY_SIZE,
         )
     }
 }

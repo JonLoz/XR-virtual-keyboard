@@ -30,7 +30,6 @@ import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.scenecore.scene
 import androidx.xr.compose.spatial.ContentEdge
 import androidx.xr.compose.spatial.Orbiter
-import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.SpatialPanel
 import androidx.xr.compose.subspace.layout.SpatialRoundedCornerShape
 import androidx.xr.compose.subspace.layout.SubspaceModifier
@@ -38,7 +37,7 @@ import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.resizable
 import androidx.xr.compose.subspace.layout.width
-import com.devices.xrvirtualkeyboard.VirtualKeyboard
+import com.example.xrvirtualkeyboard.ui.VirtualKeyboard
 import com.example.xrvirtualkeyboard.ui.theme.XRVirtualKeyboardTheme
 
 class MainActivity : ComponentActivity() {
