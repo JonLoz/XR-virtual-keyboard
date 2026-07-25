@@ -41,4 +41,9 @@ class MouseClickSource(
         engage.value = isPressed
     }
 
+    fun clearPointer() {
+        rawPointerPx.value = null
+        engage.value = false
+    }
+
 }
