@@ -9,15 +9,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
@@ -28,15 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.scenecore.scene
-import androidx.xr.compose.spatial.ContentEdge
-import androidx.xr.compose.spatial.Orbiter
-import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.layout.SpatialRoundedCornerShape
-import androidx.xr.compose.subspace.layout.SubspaceModifier
-import androidx.xr.compose.subspace.layout.height
-import androidx.xr.compose.subspace.layout.movable
-import androidx.xr.compose.subspace.layout.resizable
-import androidx.xr.compose.subspace.layout.width
 import com.example.xrvirtualkeyboard.ui.VirtualKeyboard
 import com.example.xrvirtualkeyboard.ui.theme.XRVirtualKeyboardTheme
 
@@ -46,46 +34,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        
         setContent {
             XRVirtualKeyboardTheme {
                 val session = LocalSession.current
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
-//                    Subspace {
-//                        MySpatialContent(
-//                            onRequestHomeSpaceMode = { session?.scene?.requestHomeSpace() }
-//                        )
-//                    }
                     VirtualKeyboard()
                 } else {
                     My2DContent(onRequestFullSpaceMode = { session?.scene?.requestFullSpace() })
                 }
             }
-        }
-    }
-}
-
-@SuppressLint("RestrictedApi")
-@Composable
-fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
-    SpatialPanel(SubspaceModifier.width(1280.dp).height(800.dp).resizable().movable()) {
-        Surface {
-            MainContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(48.dp)
-            )
-        }
-        Orbiter(
-            position = ContentEdge.Top,
-            offset = 20.dp,
-            alignment = Alignment.End,
-            shape = SpatialRoundedCornerShape(CornerSize(28.dp))
-        ) {
-            HomeSpaceModeIconButton(
-                onClick = onRequestHomeSpaceMode,
-                modifier = Modifier.size(56.dp)
-            )
         }
     }
 }

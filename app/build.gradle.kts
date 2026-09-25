@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.scenecore)
+    implementation(libs.androidx.arcore)
     implementation(libs.extensions1.xr)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
