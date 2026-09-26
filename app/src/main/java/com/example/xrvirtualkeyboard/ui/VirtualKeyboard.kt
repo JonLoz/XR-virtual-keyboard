@@ -17,12 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEvent
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.SpatialPanel
@@ -34,9 +31,9 @@ import com.example.xrvirtualkeyboard.geometry.KeyDefinition
 import com.example.xrvirtualkeyboard.geometry.Point2D
 import com.example.xrvirtualkeyboard.geometry.computeRowBounds
 import com.example.xrvirtualkeyboard.geometry.hitTestKey
+import com.example.xrvirtualkeyboard.input.HandJointSource
 import com.example.xrvirtualkeyboard.input.KeyDebouncer
 import com.example.xrvirtualkeyboard.input.KeyEvent
-import com.example.xrvirtualkeyboard.input.MouseClickSource
 import kotlinx.coroutines.flow.combine
 
 private val testRowKeys = listOf(
@@ -49,6 +46,7 @@ private val testRowKeys = listOf(
 
 @Composable
 fun VirtualKeyboard() {
+    val session = LocalSession.current ?: return
     val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
     Log.d("VirtualKeyboard", "isSpatialUiEnabled: $isSpatialUiEnabled")
 
@@ -57,7 +55,7 @@ fun VirtualKeyboard() {
         keyBounds.maxOf { it.center.x + it.width / 2f } - keyBounds.minOf { it.center.x - it.width / 2f }
     }
     val surfaceHeight = remember(keyBounds) { keyBounds.maxOf { it.height } }
-    val selectionSource = remember { MouseClickSource(surfaceWidth, surfaceHeight) }
+    val selectionSource = remember(session) { HandJointSource(session) }
     val debouncer = remember { KeyDebouncer() }
 
     var hoveredKeyId by remember { mutableStateOf<String?>(null) }
@@ -85,7 +83,6 @@ fun VirtualKeyboard() {
         ) {
             KeyboardSurface(
                 keyBounds = keyBounds,
-                source = selectionSource,
                 hoveredKeyId = hoveredKeyId,
                 pressedKeyIds = pressedKeyIds,
                 keys = testRowKeys,
@@ -97,30 +94,14 @@ fun VirtualKeyboard() {
 @Composable
 private fun KeyboardSurface(
     keyBounds: List<KeyBounds>,
-    source: MouseClickSource,
     hoveredKeyId: String?,
     pressedKeyIds: Set<String>,
     keys: List<KeyDefinition>,
 ) {
-    val density = LocalDensity.current
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.type == PointerEventType.Exit) {
-                            source.clearPointer()
-                            continue
-                        }
-                        val change = event.changes.firstOrNull() ?: continue
-                        source.updatePointerPosition(change.position, density)
-                        source.updateEngaged(change.pressed)
-                    }
-                }
-            },
+            .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
         keyBounds.forEach { bounds ->
