@@ -3,6 +3,7 @@ package com.example.xrvirtualkeyboard
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -63,7 +64,11 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(session, handTrackingPermissionGranted.value) {
                     if (session != null && handTrackingPermissionGranted.value) {
-                        session.configure(session.config.copy(handTracking = HandTrackingMode.BOTH))
+                        try {
+                            session.configure(session.config.copy(handTracking = HandTrackingMode.BOTH))
+                        } catch (e: Exception) {
+                            Log.e("MainActivity", "Failed to configure hand tracking", e)
+                        }
                     }
                 }
 
