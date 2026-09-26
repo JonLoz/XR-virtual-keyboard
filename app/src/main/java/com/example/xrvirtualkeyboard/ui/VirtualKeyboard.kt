@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.xr.compose.platform.LocalSession
@@ -70,22 +71,28 @@ fun VirtualKeyboard() {
     var cursorPosition by remember { mutableStateOf<Point2D?>(null) }
     var isEngaged by remember { mutableStateOf(false) }
 
-    LaunchedEffect(selectionSource) {
-        combine(selectionSource.selectionPoint, selectionSource.isEngaged) { point, engaged ->
-            val pointInDp = point?.let { Point2D(it.x * METERS_TO_DP, it.y * METERS_TO_DP) }
-            val hitKey = pointInDp?.let { hitTestKey(it, keyBounds) }
-            Triple(pointInDp, hitKey, engaged)
-        }.collect { (pointInDp, hitKey, engaged) ->
+    val updateCursorState: (Point2D?, Boolean) -> Unit = remember(keyBounds) {
+        { pointInDp, engaged ->
             cursorPosition = pointInDp
             isEngaged = engaged
+            val hitKey = pointInDp?.let { hitTestKey(it, keyBounds) }
             hoveredKeyId = hitKey
             debouncer.update(hitKey, engaged).forEach { event ->
                 when (event) {
                     is KeyEvent.Pressed -> pressedKeyIds = pressedKeyIds + event.keyId
                     is KeyEvent.Released -> pressedKeyIds = pressedKeyIds - event.keyId
-                    is KeyEvent.Repeated -> Unit // key's already highlighted; nothing to change yet
+                    is KeyEvent.Repeated -> Unit
                 }
             }
+        }
+    }
+
+    LaunchedEffect(selectionSource) {
+        combine(selectionSource.selectionPoint, selectionSource.isEngaged) { point, engaged ->
+            val pointInDp = point?.let { Point2D(it.x * METERS_TO_DP, it.y * METERS_TO_DP) }
+            Triple(pointInDp, engaged, true)
+        }.collect { (pointInDp, engaged, _) ->
+            updateCursorState(pointInDp, engaged)
         }
     }
 
@@ -101,6 +108,7 @@ fun VirtualKeyboard() {
                 pressedKeyIds = pressedKeyIds,
                 cursorPosition = cursorPosition,
                 isEngaged = isEngaged,
+                onPointerUpdate = updateCursorState,
                 keys = testRowKeys,
             )
         }
@@ -116,10 +124,26 @@ private fun KeyboardSurface(
     pressedKeyIds: Set<String>,
     cursorPosition: Point2D?,
     isEngaged: Boolean,
+    onPointerUpdate: (Point2D?, Boolean) -> Unit,
     keys: List<KeyDefinition>,
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull()
+                        if (change != null) {
+                            val xDp = change.position.x / density
+                            val yDp = change.position.y / density
+                            val pointInDp = Point2D(xDp - PANEL_WIDTH_DP / 2f, yDp - PANEL_HEIGHT_DP / 2f)
+                            onPointerUpdate(pointInDp, change.pressed)
+                        }
+                    }
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         // Keyboard background housing / plate

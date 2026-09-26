@@ -19,10 +19,7 @@ import kotlinx.coroutines.isActive
  */
 class HandJointSource(private val session: Session) : KeySelectionSource {
 
-    // TODO: VirtualKeyboard's SpatialPanel has no .movable() yet, so there's no real
-    // moving origin to track. Revisit once the keyboard is actually draggable — this
-    // needs to observe the panel's live pose instead of a fixed value.
-    private val keyboardOriginActivitySpace = Vec3(0f, 0f, 0f)
+    private var initialHandOrigin: Vec3? = null
 
     private val handStateFlow: Flow<Hand.State> = flow {
         while (currentCoroutineContext().isActive) {
@@ -41,7 +38,8 @@ class HandJointSource(private val session: Session) : KeySelectionSource {
     override val selectionPoint: Flow<Point3D?> =
         handStateFlow.map { handState ->
             val (_, indexTip) = handState.fingertipsInActivitySpace(session) ?: return@map null
-            val local = toKeyboardLocal(indexTip, keyboardOriginActivitySpace)
+            val origin = initialHandOrigin ?: indexTip.also { initialHandOrigin = it }
+            val local = toKeyboardLocal(indexTip, origin)
             // Spatial Y is +Y UP, -Y DOWN.
             // On 2D Compose UI surface, +Y is DOWN, -Y is UP.
             // Inverting Y maps spatial UP/DOWN directly to UI UP/DOWN.
